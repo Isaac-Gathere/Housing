@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Post Details{% endblock %}
+{% block content %}
+  <h2>{{ post.title }}</h2>
+  <h5>Category: {{ post.category }}</h5>
+  <p>{{ post.content }}</p>
+  {% if post.image_filename %}
+    <img src="{{ url_for('static', filename='uploads/' ~ post.image_filename) }}" alt="Image" style="max-width:500px;">
+  {% endif %}
+  <p><small class="text-muted">Posted by {{ post.author.username }}</small></p>
+  <a href="{{ url_for('post') }}">Back to your posts</a>
+{% endblock %}

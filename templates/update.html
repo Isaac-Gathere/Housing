@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}My Listings{% endblock %}
+{% block content %}
+<div class="container">
+  <h2>My Listings</h2>
+  {% for post in posts %}
+    <div class="card" style="margin-bottom: 20px;">
+      <div class="card-body">
+        <form method="POST">
+          <input type="hidden" name="post_id" value="{{ post.id }}">
+          <div>
+            <label>House Title:</label>
+            <input type="text" name="title" value="{{ post.title }}" class="form-control">
+          </div>
+          <div>
+            <label>House Type:</label>
+            <select name="house_type" class="form-control">
+              <option value="Bedsitter" {% if post.house_type=='Bedsitter' %}selected{% endif %}>Bedsitter</option>
+              <option value="1 Bedroom" {% if post.house_type=='1 Bedroom' %}selected{% endif %}>1 Bedroom</option>
+              <option value="2 Bedroom" {% if post.house_type=='2 Bedroom' %}selected{% endif %}>2 Bedroom</option>
+            </select>
+          </div>
+          <div>
+            <label>Price:</label>
+            <input type="text" name="price" value="{{ post.price }}" class="form-control">
+          </div>
+          <div>
+            <label>Description:</label>
+            <textarea name="content" class="form-control" rows="3">{{ post.content }}</textarea>
+          </div>
+          {% if post.image_filename %}
+            <p>Current Image:</p>
+            <img src="{{ url_for('static', filename='uploads/' ~ post.image_filename) }}" alt="Image" style="max-width:200px;">
+          {% endif %}
+          <div style="margin-top: 10px;">
+            <button type="submit" name="edit" value="edit" class="btn" style="background-color: #2e8b57;">Update</button>
+            <button type="submit" name="delete" value="delete" class="btn" style="background-color: #c82333;">Delete</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  {% else %}
+    <p>You have no listings yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}
