@@ -2,6 +2,16 @@
 {% block title %}All Listings{% endblock %}
 {% block content %}
 
+  <form method="GET" action="{{ url_for('view') }}">
+  <input type="text" name="location" placeholder="Search by location">
+  <select name="type">
+    <option value="">All Types</option>
+    <option value="Bedsitter">Bedsitter</option>
+    <option value="1 Bedroom">1 Bedroom</option>
+    <option value="2 Bedroom">2 Bedroom</option>
+  </select>
+  <button type="submit">Search</button>
+</form>
 
 <div class="container" id="listings-view" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
   {% for post in posts %}
@@ -11,11 +21,17 @@
       {% else %}
         <img src="https://via.placeholder.com/300x200?text=No+Image" alt="Placeholder" class="post-image">
       {% endif %}
+
+
+
+
+
       <div class="card-body">
         <div class="card-title">{{ post.title }}</div>
         <div class="card-info">Type: {{ post.house_type }}</div>
         <div class="card-info">Price: {{ post.price }}</div>
         <div class="card-info">{{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}</div>
+        <div class="card-info"> Location: {{post.location}} </div>
 
         <a href="{{ url_for('post_detail', post_id=post.id) }}" class="btn-green">
           <i class="fas fa-eye"></i> View Details

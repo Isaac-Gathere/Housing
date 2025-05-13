@@ -28,6 +28,11 @@
             <label>Description:</label>
             <textarea name="content" class="form-control" rows="3">{{ post.content }}</textarea>
           </div>
+          <div>
+            <label>Location:</label>
+            <input type="text" name="location" value="{{ post.location }}" class="form-control">
+          </div>
+
           {% if post.image_filename %}
             <p>Current Image:</p>
             <img src="{{ url_for('static', filename='uploads/' ~ post.image_filename) }}" alt="Image" style="max-width:200px;">

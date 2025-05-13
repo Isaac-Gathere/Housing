@@ -2,11 +2,28 @@
 {% block title %}Post Details{% endblock %}
 {% block content %}
   <h2>{{ post.title }}</h2>
-  <h5>Category: {{ post.category }}</h5>
-  <p>{{ post.content }}</p>
-  {% if post.image_filename %}
-    <img src="{{ url_for('static', filename='uploads/' ~ post.image_filename) }}" alt="Image" style="max-width:500px;">
-  {% endif %}
+{% if post.image_filename %}
+<img src="{{ url_for('static', filename='uploads/' ~ post.image_filename) }}" alt="Image" style="max-width:500px;">
+{% endif %}
+<h5>Type:  {{ post.house_type }}</h5>
+<p>{{ post.content }}</p>
+Price:  {{post.price}}
+<p>Location: {{post.location}}<p>
+
+<div id="map" style="height: 300px;"></div>
+
+<script>
+  var map = L.map('map').setView([{{ post.latitude }}, {{ post.longitude }}], 15);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+  }).addTo(map);
+
+  L.marker([{{ post.latitude }}, {{ post.longitude }}]).addTo(map);
+</script>
+
+
+
   <p><small class="text-muted">Posted by {{ post.author.username }}</small></p>
   <a href="{{ url_for('post') }}">Back to your posts</a>
 {% endblock %}

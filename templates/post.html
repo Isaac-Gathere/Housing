@@ -22,6 +22,50 @@
       {{ form.content(class="form-control", rows=5, placeholder="Describe the property...") }}
     </div>
     <div>
+      {{ form.location.label }}<br>
+      {{ form.location(class="form-control", placeholder="Enter the location") }}
+    </div>
+
+    <!-- Inside post.html -->
+
+<!-- Hidden inputs for Flask -->
+{{ form.latitude(id=latitude) }}
+{{ form.longitude (id = longitude) }}
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Map Container -->
+<div id="map" style="height: 300px;"></div>
+
+<script>
+  var map = L.map('map').setView([-1.2921, 36.8219], 13); // Default to Nairobi
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+  }).addTo(map);
+
+  var marker;
+
+  function onMapClick(e) {
+    if (marker) {
+      marker.setLatLng(e.latlng);
+    } else {
+      marker = L.marker(e.latlng).addTo(map);
+    }
+
+    // Set hidden fields
+    document.getElementById("latitude").value = e.latlng.lat;
+    document.getElementById("longitude").value = e.latlng.lng;
+  }
+
+  map.on('click', onMapClick);
+</script>
+
+
+
+    <div>
       <label for="image">Upload an Image:</label><br>
       <input type="file" name="image" class="form-control">
     </div>
@@ -29,6 +73,7 @@
     <div>
       {{ form.submit(class="btn") }}
     </div>
+
   </form>
 </div>
 {% endblock %}

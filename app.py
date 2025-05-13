@@ -3,11 +3,12 @@ from flask import Flask, render_template, redirect, url_for, flash, request, abo
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField, HiddenField
 from wtforms.validators import DataRequired, EqualTo, ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from config import Config
+from flask_migrate import Migrate
 
 # Initialize app and load configuration
 app = Flask(__name__)
@@ -17,11 +18,13 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+migrate = Migrate(app, db)
 
 
 # Helper for image uploads
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
 
 
 # Models
@@ -43,7 +46,10 @@ class Post(db.Model):
     title = db.Column(db.String(150), nullable=False)
     house_type = db.Column(db.String(50), nullable=False)  # House Type from dropdown
     price = db.Column(db.String(50), nullable=False)  # Price field (as string e.g., "Ksh 6,500/month")
-    content = db.Column(db.Text, nullable=False)  # Description field
+    content = db.Column(db.String, nullable=False)  # Description field
+    location = db.Column(db.String(50), nullable=False)
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
     image_filename = db.Column(db.String(150), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
@@ -81,7 +87,12 @@ class PostForm(FlaskForm):
                              validators=[DataRequired()])
     price = StringField('Price', validators=[DataRequired()])
     content = TextAreaField('Description', validators=[DataRequired()])
+    location = StringField('Location', validators=[DataRequired()])
+    latitude = HiddenField('Latitude')
+    longitude = HiddenField('Longitude')
     submit = SubmitField('Submit Post')
+
+
 
 
 # Routes
@@ -92,9 +103,18 @@ def index():
 
 @app.route('/view')
 def view():
-    # Public view of all posts; each post displays the image, title, house type, price, and description
-    posts = Post.query.all()
+    posts = Post.query
+    house_type = request.args.get('type')
+    location = request.args.get('location')
+
+    if house_type:
+        posts = posts.filter_by(house_type=house_type)
+    if location:
+        posts = posts.filter(Post.location.ilike(f"%{location}%"))
+
+    posts = posts.all()
     return render_template('view.html', posts=posts)
+
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -155,6 +175,7 @@ def post():
     form = PostForm()
     if form.validate_on_submit():
         filename = None
+        print(f"Lat: {form.latitude.data}, Lng: {form.longitude.data}")
         # Check if an image file is part of the submission
         if 'image' in request.files:
             file = request.files['image']
@@ -166,6 +187,9 @@ def post():
             house_type=form.house_type.data,
             price=form.price.data,
             content=form.content.data,
+            location = form.location.data,
+            latitude=form.latitude.data,  # ✅ Save lat/lng here
+            longitude=form.longitude.data,
             image_filename=filename,
             author=current_user
         )
@@ -197,6 +221,7 @@ def update():
                 post_to_edit.house_type = request.form.get('house_type')
                 post_to_edit.price = request.form.get('price')
                 post_to_edit.content = request.form.get('content')
+                post_to_edit.location = request.form.get('location')
                 db.session.commit()
                 flash('Post updated successfully.')
             return redirect(url_for('update'))
@@ -213,3 +238,4 @@ def initdb_command():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
+
